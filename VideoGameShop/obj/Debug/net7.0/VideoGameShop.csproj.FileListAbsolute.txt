@@ -1,0 +1,15 @@
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/bin/Debug/net7.0/VideoGameShop
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/bin/Debug/net7.0/VideoGameShop.deps.json
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/bin/Debug/net7.0/VideoGameShop.runtimeconfig.json
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/bin/Debug/net7.0/VideoGameShop.dll
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/bin/Debug/net7.0/VideoGameShop.pdb
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/VideoGameShop.csproj.AssemblyReference.cache
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/VideoGameShop.GeneratedMSBuildEditorConfig.editorconfig
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/VideoGameShop.AssemblyInfoInputs.cache
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/VideoGameShop.AssemblyInfo.cs
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/VideoGameShop.csproj.CoreCompileInputs.cache
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/VideoGameShop.dll
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/refint/VideoGameShop.dll
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/VideoGameShop.pdb
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/VideoGameShop.genruntimeconfig.cache
+/Users/rafeedchoudhury/Projects/VideoGameShop/VideoGameShop/obj/Debug/net7.0/ref/VideoGameShop.dll

@@ -1,0 +1,3 @@
+1234,Minecraft,40,5,25
+1589,Phoenix_Wright:_Ace_Attorney,20,5,35
+2293,Apex_Legends,10,4.5,12
