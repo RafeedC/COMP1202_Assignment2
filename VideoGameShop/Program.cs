@@ -192,7 +192,7 @@ namespace VideoGameShop
         {
             // Get product information from the user
             // todo add validation
-            Console.WriteLine("[Add Product]: Please enter the product details, seperated by commas.");
+            Console.WriteLine("[Add Product]: Please enter the product details.");
             Console.Write("\tProduct name: ");
             string name = Console.ReadLine();
             Console.Write("\tProduct ID (leave blank to auto-generate): ");
