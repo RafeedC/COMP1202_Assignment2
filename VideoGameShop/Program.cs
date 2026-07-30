@@ -35,63 +35,54 @@ namespace VideoGameShop
         public int GetQuantity() { return this.quantity; }
 
         // Mutators (setters)
-        public void SetItemNumber(int itemNumber)
+        // todo add the validation method comparisons as a condition!!
+        public bool SetItemNumber(int itemNumber)
         {
             if (itemNumber >= 1000 && itemNumber <= 9999) {
                 this.itemNumber = itemNumber;
+                return true;
             }
-            else
-            {
-                Console.WriteLine("Item number must be 4 digits");
-            }
+            return false;
         }
 
-        public void SetItemName(string itemName)
+        public bool SetItemName(string itemName)
         {
             if (itemName.Length > 0)
             {
                 this.itemName = itemName;
+                return true;
             }
-            else
-            {
-                Console.WriteLine("Item must have a name");
-            }
+            return false;
         }
 
-        public void SetPrice(double price)
+        public bool SetPrice(double price)
         {
             if (price >= 0)
             {
                 this.price = price;
+                return true;
             }
-            else
-            {
-                Console.WriteLine("Price cannot be negative");
-            }
+            return false;
         }
 
-        public void SetUserRating(double userRating)
+        public bool SetUserRating(double userRating)
         {
-            if (userRating >=0 && userRating <= 5)
+            if (userRating >= 0 && userRating <= 5)
             {
                 this.userRating = userRating;
+                return true;
             }
-            else
-            {
-                Console.WriteLine("User rating must be between 0 and 5");
-            }
+            return false;
         }
 
-        public void SetQuantity(int quantity)
+        public bool SetQuantity(int quantity)
         {
             if (quantity >= 0)
             {
                 this.quantity = quantity;
+                return true;
             }
-            else
-            {
-                Console.WriteLine("Quantity cannot be negative");
-            }
+            return false;
         }
 
         // Override ToString() method
@@ -101,11 +92,12 @@ namespace VideoGameShop
         }
     }
 
-    // Input validation class
-    internal class Validate
+    // Program class
+    internal class Program
     {
+        // Validation methods
         // Validates the user's numerical choice against a possible range
-        public static bool AsMenuInput(string input, int menuRange)
+        static bool ValidateAsMenuInput(string input, int menuRange)
         {
             int choice;
 
@@ -119,21 +111,14 @@ namespace VideoGameShop
             return true;
         }
 
-        // Validates a user's string input
-        public static bool AsString()
-        {
-            // todo
-            return true;
-        }
-
         // Validates a user's input as a number
-        public static bool AsNumber(string input, int digits)
+        static bool ValidateAsNumber(string input, int digits = -1)
         {
             // Check if input is a number
-            if (!int.TryParse(input, out int n)) return false;
+            if (!int.TryParse(input, out int n) || !double.TryParse(input, out double m)) return false;
             if (n < 0) return false;
 
-            // Do not enforce digit validation if -1 is provided as argument
+            // Do not enforce digit length validation if default parameter is used
             if (digits == -1) return true;
 
             // Lastly, check if the input has a valid amount of digits
@@ -141,19 +126,39 @@ namespace VideoGameShop
 
             return true;
         }
-    }
 
-    // todo perhaps split the gane data-dealing functions into their own Inventory class?
-
-    // Utility class - contains reusable helper methods
-    // todo: Note: place any utility and file-related functions here
-    internal class Utility
-    {
-        // Returns all Games within the inventory file
-        public static Game[] ReadFileData()
+        // Reusable method that prompts the user for a number, then calls the validation method to check the input
+        static int PromptAsNumber(int digits = 4)
         {
-            Game[] games = { };
+            string input = "";
+            int num = 0;
 
+            while (!ValidateAsNumber(input, digits))
+            {
+                Console.Write("> ");
+                input = Console.ReadLine();
+
+                // Exit this function if user cancelled operation
+                if (input == "q")
+                {
+                    return num;
+                }
+
+                // Otherwise, validate the input as a number
+                if (!ValidateAsNumber(input, digits))
+                {
+                    // If fail, warn user with the appropriate message
+                    Console.WriteLine("[Error]: Please enter a valid number with proper length. To cancel, type 'q':", digits);
+                }
+            }
+            num = Convert.ToInt32(input);
+            return num;
+        }
+
+        // Utility methods
+        // Returns all Games within the inventory file
+        static Game[] ReadFileData()
+        {
             // Get the inventory file size
             int size = 0;
             try
@@ -173,7 +178,7 @@ namespace VideoGameShop
             }
 
             // Then, initialize the array with the proper size
-            games = new Game[size];
+            Game[] games = new Game[size];
 
             // Perform a second file pass to extract data into the array
             try
@@ -190,7 +195,13 @@ namespace VideoGameShop
 
                     // Extract data then add it to the array
                     string[] data = line.Split(",");
-                    games[i] = new Game(Convert.ToInt32(data[0]), data[1], Convert.ToDouble(data[2]), Convert.ToDouble(data[3]), Convert.ToInt32(data[4]));
+                    games[i] = new Game(
+                        Convert.ToInt32(data[0]),
+                        data[1],
+                        Convert.ToDouble(data[2]),
+                        Convert.ToDouble(data[3]),
+                        Convert.ToInt32(data[4])
+                    );
                     i++;
                 }
             }
@@ -202,45 +213,24 @@ namespace VideoGameShop
             return games;
         }
 
-        // todo: Place a function to write to the inventory file here
-        public static void WriteToFile(Game gameData)
+        // todo - fix this
+        static void WriteToFile(Game game)
         {
-            // todo
-        }
-
-        // Reusable function that prompts with number validation
-        public static string Prompt(int digits = 4, string errorMsg = "")
-        {
-            // Capture and verify user input
-            string input;
-            do
+            try
             {
-                Console.Write("> ");
-                input = Console.ReadLine();
+                StreamWriter writer = new StreamWriter("VideoGames.txt", true);
 
-                // Return if user cancelled operation
-                if (input == "!q")
-                {
-                    return "";
-                }
-                // Otherwise, validate the input as a number
-                if (!Validate.AsNumber(input, digits))
-                {
-                    // If fail, warn user with the appropriate message
-                    if (errorMsg == "") { Console.WriteLine("[Error]: Please enter a {0}-digit number. To cancel, type !q", digits); }
-                    else { Console.WriteLine(errorMsg, digits); }
-                }
-            } while (!Validate.AsNumber(input, digits));
-
-            return input;
+                // Format a string containing the game information, then append it to file
+                string line = $"{game.GetItemNumber()},{game.GetItemName()},{game.GetPrice()},{game.GetUserRating()},{game.GetQuantity()}";
+                writer.WriteLine(line);
+            } catch (Exception err)
+            {
+                Console.WriteLine(err.Message);
+            }
         }
-    }
 
-    // Program flow class - interacts with the user with major program branches
-    internal class ProgramFlow
-    {
         // Add a product to the inventory file
-        public static void AddProduct()
+        static void AddProduct()
         {
             // Get product information from the user
             // todo add validation, add call to Utility.SetGameData() to write to inventory file
@@ -256,35 +246,71 @@ namespace VideoGameShop
             Console.Write("\tProduct quantity: ");
             string quantity = Console.ReadLine();
 
-            Console.Write("Are you sure you want to add this product? [y/n]");
+            Console.Write("Are you sure you want to add this product? [y/n]: ");
             string confirmationInput = Console.ReadLine();
 
             Console.WriteLine();
 
             // Validate the inputs
-            // todo
+            int invalidInputs = 0;
+            if (name == "")
+            {
+                Console.WriteLine("\t[Invalid input]: Please enter a name");
+                invalidInputs++;
+            }
+            if (!ValidateAsNumber(id))
+            {
+                Console.WriteLine("\t[Invalid input]: Enter a 4-digit valid ID at or above 1000");
+                invalidInputs++;
+            }
+            if (!ValidateAsNumber(price))
+            {
+                Console.WriteLine("\t[Invalid input]: Enter a valid price above 0.");
+                invalidInputs++;
+            }
+            // todo make sure that the user can input doubles!!
+            if (!ValidateAsNumber(userRating))
+            {
+                Console.WriteLine("\t[Invalid input]: Enter a valid rating from 0.0 through 5.0");
+                invalidInputs++;
+            }
+            if (invalidInputs > 0)
+            {
+                Console.WriteLine("[Errors]: {0} errors found. Please try again.", invalidInputs);
+                Console.WriteLine();
+                return;
+            }
 
-            // Write (append) to inventory data file
-            // todo
+            // Create the new game, then write (append) it to inventory data file
+            // todo make sure arguments line up with constructor signature
+            Game newGame = new Game(
+                Convert.ToInt32(id),
+                name,
+                Convert.ToDouble(price),
+                Convert.ToDouble(userRating),
+                Convert.ToInt32(quantity)
+            );
+            Console.WriteLine(newGame);
+            //WriteToFile(newGame);
         }
 
         // Search the store inventory based on item number
-        public static void SearchByItemNumber()
+        static void SearchByItemNumber()
         {
-            Console.WriteLine("[Search] Please enter a product number: ");
+            Console.WriteLine("[Search] Please enter a 4-digit product number:");
 
             // Capture and verify user input. Return if user has cancelled the operation.
-            string input = Utility.Prompt();
-            if (input == "") return;
+            int input = PromptAsNumber();
+            if (input == 0) return;
 
             // Get all game data
-            Game[] games = Utility.ReadFileData();
+            Game[] games = ReadFileData();
 
             // Search through the game data based on the input to obtain a match
             for (int i = 0; i < games.Length; i++)
             {
                 // If a match was found, display the results and exit this method
-                if (games[i].GetItemNumber() == Convert.ToInt32(input))
+                if (games[i].GetItemNumber() == input)
                 {
                     Console.WriteLine("[Result]: " + games[i]);
                     Console.WriteLine();
@@ -293,7 +319,7 @@ namespace VideoGameShop
             }
 
             // If no match found, display an error message, then loop again
-            Console.WriteLine("[Error]: Game not found. Please try again later with a valid product ID from our inventory.");
+            Console.WriteLine("[Error]: Game not found. Please try again next time with a valid product ID from our inventory.");
             Console.WriteLine();
         }
 
@@ -301,20 +327,20 @@ namespace VideoGameShop
         // todo, complete this function
         public static void SearchByMaxPrice()
         {
-            Console.WriteLine("[Search] Please enter a maximum price to search for: ");
+            Console.WriteLine("[Search] Please enter a maximum price to search for:");
 
             // Capture and verify user input. Return if user has cancelled.
-            string input = Utility.Prompt(-1, "[Error]: Please enter a valid number.");
-            if (input == "") return;
+            int input = PromptAsNumber(-1);
+            if (input == 0) return;
 
             // Print all games that fall within the price range
             Console.WriteLine();
             Console.WriteLine("Results for all games lesser than or equal to ${0}:", input);
-            Game[] games = Utility.ReadFileData();
+            Game[] games = ReadFileData();
             bool matchFound = false;
             for (int i = 0; i < games.Length; i++)
             {
-                if (games[i].GetPrice() <= Convert.ToDouble(input))
+                if (games[i].GetPrice() <= input)
                 {
                     Console.WriteLine("\t[Result #{0}]: " + games[i], i);
                     matchFound = true;
@@ -322,7 +348,7 @@ namespace VideoGameShop
             }
 
             // If no match found, then inform the user with an appropriate message
-            if (!matchFound) Console.WriteLine("[Info]: No match found. Please try a higher price.");
+            if (!matchFound) Console.WriteLine("[Error]: No match found. Please try a higher price.");
             Console.WriteLine();
         }
 
@@ -332,14 +358,10 @@ namespace VideoGameShop
             Console.WriteLine("GetInventoryStatistics()");
             // todo
         }
-    }
 
-    // Main execution and entry point
-    internal class Program
-    {
         public static void Main(string[] args)
         {
-            Console.WriteLine($"Hello! Welcome to our video game store!");
+            Console.WriteLine("Hello! Welcome to our video game store!");
             // Program loop
             while (true)
             {
@@ -347,7 +369,7 @@ namespace VideoGameShop
                 Console.WriteLine("[Main Menu]: Please select one of the 5 options:");
                 Console.WriteLine("\t1) Add a new product");
                 Console.WriteLine("\t2) Search for a product by item number");
-                Console.WriteLine("\t3) Search for a product by price");
+                Console.WriteLine("\t3) Search for a product by max price");
                 Console.WriteLine("\t4) Store statistics");
                 Console.WriteLine("\t5) Exit Application");
 
@@ -356,7 +378,7 @@ namespace VideoGameShop
                 Console.WriteLine();
 
                 // Repeat this loop iteration if the input is invalid
-                if (!Validate.AsMenuInput(input, 5))
+                if (!ValidateAsMenuInput(input, 5))
                 {
                     Console.WriteLine("[Error]: Please enter a correct input from 1 through 5.");
                     Console.WriteLine();
@@ -364,20 +386,20 @@ namespace VideoGameShop
                 }
 
                 // Branch the program based on user input
-                int choice = Convert.ToInt16(input);
+                int choice = Convert.ToInt32(input);
                 switch (choice)
                 {
                     case 1:
-                        ProgramFlow.AddProduct();
+                        AddProduct();
                         break;
                     case 2:
-                        ProgramFlow.SearchByItemNumber();
+                        SearchByItemNumber();
                         break;
                     case 3:
-                        ProgramFlow.SearchByMaxPrice();
+                        SearchByMaxPrice();
                         break;
                     case 4:
-                        ProgramFlow.GetInventoryStatistics();
+                        GetInventoryStatistics();
                         break;
                     case 5:
                         Console.WriteLine("Thanks for visiting our store!");
