@@ -95,7 +95,6 @@ namespace VideoGameShop
             return false;
         }
 
-        // Override of the ToString() method
         public override string ToString()
         {
             return $"Name: {this.itemName} | Item Number: {this.itemNumber} | Price: ${this.price} | User Rating: {this.userRating} | Quantity: {this.quantity}";
@@ -112,13 +111,11 @@ namespace VideoGameShop
         {
             // Check if input is a number
             if (!int.TryParse(input, out num)) return false;
-            if (num < 0) return false;
+            else if (num < 0) return false;
 
-            // Do not enforce digit length validation if default parameter is used
+            // Validate digit length if it is specified
             if (digits == -1) return true;
-
-            // Lastly, check if the input has a valid amount of digits
-            if (input.Length != digits) return false;
+            else if (input.Length != digits) return false;
 
             return true;
         }
@@ -126,11 +123,11 @@ namespace VideoGameShop
         // Validates the user's numerical choice against a possible range
         static bool ValidateAsMenuInput(string input, out int choice, int menuRange)
         {
-            // Perform initial validations
+            // Check if input is a number by chaining to existing method
             if (!ValidateAsInt(input, out choice)) return false;
 
             // Check if the choice does not fall within the range
-            if (choice < 1 || choice > menuRange) return false;
+            else if (choice < 1 || choice > menuRange) return false;
 
             return true;
         }
@@ -155,7 +152,6 @@ namespace VideoGameShop
                 // Otherwise, validate the input as a number
                 if (!ValidateAsInt(input, out num, digits))
                 {
-                    // If fail, warn user with the appropriate message
                     Console.WriteLine("[Error]: Please enter a valid number. To cancel, type 'q':");
                 }
             }
@@ -223,6 +219,7 @@ namespace VideoGameShop
             return games;
         }
 
+        // Appends a game to the inventory file
         static void WriteToFile(Game game)
         {
             try
@@ -239,9 +236,34 @@ namespace VideoGameShop
             }
         }
 
+        /**** Utility methods ****/
+
+        // Method to check if two game ids are unique
+        static bool IsUnique(Game[] games, int id)
+        {
+            for (int i = 0; i < games.Length; i++)
+            {
+                if (games[i].GetItemNumber() == id)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Method to get price average of all games
+        static double GetPriceAvg(Game[] games)
+        {
+            double sum = 0;
+            for (int i = 0; i < games.Length; i++)
+            {
+                sum += games[i].GetPrice();
+            }
+            return sum / games.Length;
+        }
+
         /**** Program flow methods ****/
 
-        // Add a product to the inventory file
         static void AddProduct()
         {
             // Declare required variables
@@ -293,7 +315,7 @@ namespace VideoGameShop
                 // Name validation - must expect non-empty string
                 if (name == "")
                 {
-                    Console.WriteLine("\t[Error]: Enter a product name. Press 'q' anytime to cancel.");
+                    Console.WriteLine("[Error]: Enter a product name.");
                     ok = false;
                 }
                 // ID validation - optional, but when entered must expect int with 4 digits
@@ -309,8 +331,7 @@ namespace VideoGameShop
                     ok = false;
                 }
                 // Rating validation - must expect double between [0.0, 5.0]
-                Double.TryParse(userRatingStr, out rating);
-                if (rating < 0 || rating > 5)
+                if (!Double.TryParse(userRatingStr, out rating) || rating < 0 || rating > 5)
                 {
                     Console.WriteLine("[Error]: Enter a valid rating between 0.0 through 5.0.");
                     ok = false;
@@ -323,14 +344,12 @@ namespace VideoGameShop
                 }
 
                 // Check if user-inputted id is unique
-                for (int i = 0; i < games.Length; i++)
+                if (!IsUnique(games, id))
                 {
-                    if (games[i].GetItemNumber() == id)
-                    {
-                        Console.WriteLine("[Error]: Game ID {0} is not unique. Please enter another ID.", id);
-                        ok = false;
-                    }
+                    Console.WriteLine("[Error]: Game ID {0} is not unique.", id);
+                    ok = false;
                 }
+
                 Console.WriteLine();
 
             } while (!ok);
@@ -338,21 +357,11 @@ namespace VideoGameShop
             // Auto-generate an id if none was inputted
             if (id == 0)
             {
-                bool isUnique = true;
                 do
                 {
-                    // Generate a new id
                     id = new Random().Next(1000, 9999);
-
-                    // Check for uniqueness
-                    for (int i = 0; i < games.Length; i++)
-                    {
-                        if (games[i].GetItemNumber() == id)
-                        {
-                            isUnique = false;
-                        }
-                    }
-                } while (!isUnique);
+                }
+                while (!IsUnique(ReadFileData(), id));
             }
 
             // Create a new game Object
@@ -370,7 +379,6 @@ namespace VideoGameShop
             WriteToFile(newGame);
         }
 
-        // Search the store inventory based on item number
         static void SearchByItemNumber()
         {
             Console.WriteLine("[Search] Please enter a 4-digit product number. Press 'q' anytime to cancel:");
@@ -385,7 +393,6 @@ namespace VideoGameShop
             // Search through the game data based on the input to obtain a match
             for (int i = 0; i < games.Length; i++)
             {
-                // If a match was found, display the results and exit this method
                 if (games[i].GetItemNumber() == input)
                 {
                     Console.WriteLine("\n[Result]: " + games[i] + "\n");
@@ -424,13 +431,56 @@ namespace VideoGameShop
             Console.WriteLine();
         }
 
-        // todo
         public static void GetInventoryStatistics()
         {
-            Console.WriteLine("GetInventoryStatistics()");
+            // Declare required variables
+            Game[] games = ReadFileData();
+            Game minPricedGame;
+            Game maxPricedGame;
+            double priceAvg;
+            double priceRange;
+
+            // Sort by price ascending
+            for (int i = 0; i < games.Length - 1; i++)
+            {
+                for (int j = 0; j < games.Length - i - 1; j++)
+                {
+                    // If one adjacent item's price is greater than the other, then swap
+                    if (games[j].GetPrice() > games[j + 1].GetPrice())
+                    {
+                        Game temp = games[j];
+                        games[j] = games[j + 1];
+                        games[j + 1] = temp;
+                    }
+                }
+            }
+
+            // Get the statistics
+            minPricedGame = games[0];
+            maxPricedGame = games[games.Length - 1];
+            priceAvg = GetPriceAvg(games);
+            priceRange = maxPricedGame.GetPrice() - minPricedGame.GetPrice();
+
+            // Print these statistics
+            Console.WriteLine("Store statistics:");
+            Console.WriteLine("\t[Price Average]: ${0}", priceAvg);
+            Console.WriteLine("\t[Price Range]: $0-${0}", priceRange);
+            Console.WriteLine("\t[Most Expensive]: {0} at ${1}", maxPricedGame.GetItemName(), maxPricedGame.GetPrice());
+            Console.WriteLine("\t[Least Expensive]: {0} at ${1}", minPricedGame.GetItemName(), minPricedGame.GetPrice());
+            Console.WriteLine();
+        }
+        
+        // Prints out all games in the inventory
+        public static void ShowAllItems()
+        {
+            Console.WriteLine("All games:");
 
             Game[] games = ReadFileData();
-            // todo
+            for (int i = 0; i < games.Length; i++)
+            {
+                Console.WriteLine("\t" + games[i]);
+            }
+            Console.WriteLine();
         }
 
         public static void Main(string[] args)
@@ -440,21 +490,22 @@ namespace VideoGameShop
             while (true)
             {
                 // Prompt user with the start menu
-                Console.WriteLine("[Main Menu]: Please select one of the 5 options:");
-                Console.WriteLine("\t1) Add a new product");
-                Console.WriteLine("\t2) Search for a product by item number");
-                Console.WriteLine("\t3) Search for a product by max price");
-                Console.WriteLine("\t4) Store statistics");
-                Console.WriteLine("\t5) Exit Application");
+                Console.WriteLine("[Main Menu]: Please select one of the 6 options:");
+                Console.WriteLine("\t1) Show all products");
+                Console.WriteLine("\t2) Add a new product");
+                Console.WriteLine("\t3) Search for a product by item number");
+                Console.WriteLine("\t4) Search for a product by max price");
+                Console.WriteLine("\t5) Store statistics");
+                Console.WriteLine("\t6) Exit Application");
 
                 Console.Write("> ");
                 string input = Console.ReadLine();
                 Console.WriteLine();
 
                 // Repeat this loop iteration if the input is invalid
-                if (!ValidateAsMenuInput(input, out int choice, 5))
+                if (!ValidateAsMenuInput(input, out int choice, 6))
                 {
-                    Console.WriteLine("[Error]: Please enter a correct input from 1 through 5.\n");
+                    Console.WriteLine("[Error]: Please enter a correct input from 1 through 6.\n");
                     continue;
                 }
 
@@ -462,18 +513,21 @@ namespace VideoGameShop
                 switch (choice)
                 {
                     case 1:
-                        AddProduct();
+                        ShowAllItems();
                         break;
                     case 2:
-                        SearchByItemNumber();
+                        AddProduct();
                         break;
                     case 3:
-                        SearchByMaxPrice();
+                        SearchByItemNumber();
                         break;
                     case 4:
-                        GetInventoryStatistics();
+                        SearchByMaxPrice();
                         break;
                     case 5:
+                        GetInventoryStatistics();
+                        break;
+                    case 6:
                         Console.WriteLine("Thanks for visiting our store! Press any key to quit application...");
                         Console.ReadKey();
 
