@@ -1,4 +1,5 @@
-// Authors: Rafeed Choudhury, Ben Claridad
+// Group no: 60
+// Authors: Rafeed Choudhury (101657725), Ben Claridad (101647178), Abigail Tilahun (101654548)
 
 using System;
 
